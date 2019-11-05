@@ -1,7 +1,10 @@
 package urlshort
 
 import (
+	"log"
 	"net/http"
+
+	"gopkg.in/yaml.v3"
 )
 
 // MapHandler will return an http.HandlerFunc (which also
@@ -15,11 +18,22 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 		path := "/" + r.URL.Path[1:]
 		if url, present := pathsToUrls[path]; present {
 			http.Redirect(w, r, url, http.StatusMovedPermanently)
-		} else {
-			fallback.ServeHTTP(w, r)
+			return
 		}
+		fallback.ServeHTTP(w, r)
 	}
 	return handler
+}
+
+// URL is the child type
+type URL struct {
+	Path string
+	URL  string `yaml:"url"`
+}
+
+// Config is the parent
+type Config struct {
+	Urls []URL `yaml:"urls"`
 }
 
 // YAMLHandler will parse the provided YAML and then return
@@ -39,6 +53,23 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
-	// TODO: Implement this...
-	return nil, nil
+	cfg := Config{}
+
+	err := yaml.Unmarshal(yml, &cfg)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		path := "/" + r.URL.Path[1:]
+
+		for _, url := range cfg.Urls {
+			if url.Path == path {
+				http.Redirect(w, r, url.URL, http.StatusMovedPermanently)
+				return
+			}
+			fallback.ServeHTTP(w, r)
+		}
+	}
+	return handler, nil
 }
