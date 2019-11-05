@@ -13,14 +13,12 @@ import (
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		path := "/" + r.URL.Path[1:]
-		url, present := pathsToUrls[path]
-		if present {
+		if url, present := pathsToUrls[path]; present {
 			http.Redirect(w, r, url, http.StatusMovedPermanently)
 		} else {
 			fallback.ServeHTTP(w, r)
 		}
 	}
-
 	return handler
 }
 
