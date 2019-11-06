@@ -40,5 +40,6 @@ func defaultMux() *http.ServeMux {
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, world!")
+	w.WriteHeader(http.StatusNotFound)
+	fmt.Fprintln(w, "404 Not Found")
 }
