@@ -17,7 +17,7 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		path := "/" + r.URL.Path[1:]
 		if url, present := pathsToUrls[path]; present {
-			http.Redirect(w, r, url, http.StatusMovedPermanently)
+			http.Redirect(w, r, url, http.StatusFound)
 			return
 		}
 		fallback.ServeHTTP(w, r)
@@ -54,10 +54,11 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 
 		for _, url := range pathUrls {
 			if url.Path == path {
-				http.Redirect(w, r, url.URL, http.StatusMovedPermanently)
+				http.Redirect(w, r, url.URL, http.StatusFound)
 				return
 			}
 			fallback.ServeHTTP(w, r)
+			return
 		}
 	}
 	return handler, nil
