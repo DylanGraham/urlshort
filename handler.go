@@ -25,17 +25,6 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 	return handler
 }
 
-// URL is the child type
-type URL struct {
-	Path string
-	URL  string `yaml:"url"`
-}
-
-// Config is the parent
-type Config struct {
-	Urls []URL `yaml:"urls"`
-}
-
 // YAMLHandler will parse the provided YAML and then return
 // an http.HandlerFunc (which also implements http.Handler)
 // that will attempt to map any paths to their corresponding
@@ -53,9 +42,9 @@ type Config struct {
 // See MapHandler to create a similar http.HandlerFunc via
 // a mapping of paths to urls.
 func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
-	cfg := Config{}
+	var pathUrls []pathURL
 
-	err := yaml.Unmarshal(yml, &cfg)
+	err := yaml.Unmarshal(yml, &pathUrls)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -63,7 +52,7 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		path := "/" + r.URL.Path[1:]
 
-		for _, url := range cfg.Urls {
+		for _, url := range pathUrls {
 			if url.Path == path {
 				http.Redirect(w, r, url.URL, http.StatusMovedPermanently)
 				return
@@ -72,4 +61,9 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 		}
 	}
 	return handler, nil
+}
+
+type pathURL struct {
+	Path string
+	URL  string `yaml:"url"`
 }

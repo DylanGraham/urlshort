@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gophercises/urlshort"
+	"github.com/DylanGraham/urlshort"
 )
 
 func main() {
@@ -20,7 +20,6 @@ func main() {
 	// Build the YAMLHandler using the mapHandler as the
 	// fallback
 	yaml := `
-urls:
   - path: /urlshort
     url: https://github.com/gophercises/urlshort
   - path: /urlshort-final
